@@ -148,6 +148,9 @@ arquitetura, componentes/implantação, classes, sequência, comunicação, esta
 está em [`documentacao-projeto.html`](documentacao-projeto.html) — basta abrir no navegador
 (os diagramas estão embutidos no arquivo).
 
+> 🌐 **Versão online (GitHub Pages):**
+> [https://gustavofirmino.github.io/trabalho2-projeto-software/documentacao-projeto.html](https://gustavofirmino.github.io/trabalho2-projeto-software/documentacao-projeto.html)
+
 ---
 
 ## 📂 Estrutura de Pastas
