@@ -1,0 +1,29 @@
+@startuml DSS UC-01 - Agendar Atendimento
+skinparam sequenceArrowThickness 2
+skinparam sequence {
+  ActorBackgroundColor #DBEAFE
+  ActorBorderColor #2563EB
+  ParticipantBackgroundColor #EEF2FF
+  ParticipantBorderColor #4F46E5
+  ArrowColor #4F46E5
+  LifeLineBorderColor #A5B4FC
+}
+skinparam roundcorner 8
+
+title DSS — UC-01 Agendar Atendimento
+
+actor "Cliente" as C
+participant ":Sistema AutoFix" as S
+
+C -> S : consultarHorariosDisponiveis(data)
+S --> C : lista de horários livres
+
+C -> S : agendarAtendimento(veiculoId, data, hora,\ndescricaoProblema)
+alt Horário disponível
+  S --> C : agendamento confirmado\n(código do agendamento)
+  S -> S : notificarClientePorEmail()
+else Horário indisponível
+  S --> C : erro: "Horário já reservado.\nEscolha outro horário."
+end
+
+@enduml

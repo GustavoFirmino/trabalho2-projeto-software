@@ -1,0 +1,136 @@
+@startuml Modelo ER - AutoFix
+!pragma layout smetana
+hide circle
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor #F0FFF4
+  BorderColor #16A34A
+  ArrowColor #16A34A
+}
+skinparam roundcorner 8
+
+title Modelo de Dados (ER) — AutoFix
+
+entity "clientes" as clientes {
+  * id : BIGSERIAL <<PK>>
+  --
+  * nome : VARCHAR(120)
+  * cpf : VARCHAR(11) <<UNIQUE>>
+  * email : VARCHAR(120) <<UNIQUE>>
+  telefone : VARCHAR(20)
+  endereco : VARCHAR(255)
+}
+
+entity "funcionarios" as funcionarios {
+  * id : BIGSERIAL <<PK>>
+  --
+  * nome : VARCHAR(120)
+  * cpf : VARCHAR(11) <<UNIQUE>>
+  * matricula : VARCHAR(20) <<UNIQUE>>
+  * cargo : VARCHAR(20) -- ATENDENTE | MECANICO | GERENTE
+  especialidade : VARCHAR(60)
+  salario : NUMERIC(10,2)
+}
+
+entity "veiculos" as veiculos {
+  * id : BIGSERIAL <<PK>>
+  --
+  * cliente_id : BIGINT <<FK>>
+  * placa : VARCHAR(8) <<UNIQUE>>
+  * marca : VARCHAR(40)
+  * modelo : VARCHAR(60)
+  ano : INT
+  quilometragem : INT
+}
+
+entity "agendamentos" as agendamentos {
+  * id : BIGSERIAL <<PK>>
+  --
+  * cliente_id : BIGINT <<FK>>
+  * veiculo_id : BIGINT <<FK>>
+  * data_hora : TIMESTAMP
+  descricao_problema : TEXT
+  * status : VARCHAR(20)
+}
+
+entity "ordens_servico" as os {
+  * numero : BIGSERIAL <<PK>>
+  --
+  * veiculo_id : BIGINT <<FK>>
+  * atendente_id : BIGINT <<FK>>
+  mecanico_id : BIGINT <<FK>>
+  agendamento_id : BIGINT <<FK>>
+  * data_abertura : TIMESTAMP
+  data_fechamento : TIMESTAMP
+  * status : VARCHAR(25)
+}
+
+entity "orcamentos" as orcamentos {
+  * id : BIGSERIAL <<PK>>
+  --
+  * os_numero : BIGINT <<FK, UNIQUE>>
+  * data_emissao : TIMESTAMP
+  * valor_total : NUMERIC(10,2)
+  aprovado : BOOLEAN
+  motivo_recusa : TEXT
+}
+
+entity "servicos" as servicos {
+  * id : BIGSERIAL <<PK>>
+  --
+  * descricao : VARCHAR(120)
+  * preco_base : NUMERIC(10,2)
+  tempo_estimado_horas : INT
+}
+
+entity "itens_servico" as itens_servico {
+  * id : BIGSERIAL <<PK>>
+  --
+  * os_numero : BIGINT <<FK>>
+  * servico_id : BIGINT <<FK>>
+  * valor_cobrado : NUMERIC(10,2)
+  * concluido : BOOLEAN
+}
+
+entity "pecas" as pecas {
+  * id : BIGSERIAL <<PK>>
+  --
+  * codigo : VARCHAR(30) <<UNIQUE>>
+  * descricao : VARCHAR(120)
+  * preco_unitario : NUMERIC(10,2)
+  * quantidade_estoque : INT
+}
+
+entity "itens_peca" as itens_peca {
+  * id : BIGSERIAL <<PK>>
+  --
+  * os_numero : BIGINT <<FK>>
+  * peca_id : BIGINT <<FK>>
+  * quantidade : INT
+  * valor_unitario : NUMERIC(10,2)
+}
+
+entity "pagamentos" as pagamentos {
+  * id : BIGSERIAL <<PK>>
+  --
+  * os_numero : BIGINT <<FK, UNIQUE>>
+  * data_hora : TIMESTAMP
+  * valor : NUMERIC(10,2)
+  * forma : VARCHAR(20)
+  nsu : VARCHAR(40)
+}
+
+clientes ||--o{ veiculos
+clientes ||--o{ agendamentos
+veiculos ||--o{ agendamentos
+veiculos ||--o{ os
+agendamentos |o--o| os
+funcionarios ||--o{ os
+os ||--|| orcamentos
+os ||--{ itens_servico
+servicos ||--o{ itens_servico
+os ||--o{ itens_peca
+pecas ||--o{ itens_peca
+os ||--o| pagamentos
+
+@enduml

@@ -1,0 +1,159 @@
+@startuml Classes - AutoFix
+!pragma layout smetana
+skinparam class {
+  BackgroundColor #EEF2FF
+  BorderColor #4F46E5
+  ArrowColor #4F46E5
+}
+skinparam roundcorner 8
+
+title Diagrama de Classes — AutoFix
+
+abstract class Pessoa {
+  - id: Long
+  - nome: String
+  - cpf: String
+  - email: String
+  - telefone: String
+}
+
+class Cliente {
+  - endereco: String
+  + consultarHistorico(): List<OrdemServico>
+}
+
+class Funcionario {
+  - matricula: String
+  - salario: BigDecimal
+}
+
+class Atendente {
+  + abrirOS(veiculo: Veiculo): OrdemServico
+  + registrarPagamento(os: OrdemServico): Pagamento
+}
+
+class Mecanico {
+  - especialidade: String
+  + registrarDiagnostico(os: OrdemServico): Orcamento
+  + executarServico(item: ItemServico): void
+}
+
+class Veiculo {
+  - id: Long
+  - placa: String
+  - marca: String
+  - modelo: String
+  - ano: int
+  - quilometragem: int
+}
+
+class Agendamento {
+  - id: Long
+  - dataHora: LocalDateTime
+  - descricaoProblema: String
+  - status: StatusAgendamento
+  + confirmar(): void
+  + cancelar(): void
+}
+
+class OrdemServico {
+  - numero: Long
+  - dataAbertura: LocalDateTime
+  - dataFechamento: LocalDateTime
+  - status: StatusOS
+  + calcularValorTotal(): BigDecimal
+  + finalizar(): void
+}
+
+class Orcamento {
+  - id: Long
+  - dataEmissao: LocalDateTime
+  - valorTotal: BigDecimal
+  - aprovado: Boolean
+  - motivoRecusa: String
+  + aprovar(): void
+  + recusar(motivo: String): void
+}
+
+class Servico {
+  - id: Long
+  - descricao: String
+  - precoBase: BigDecimal
+  - tempoEstimadoHoras: int
+}
+
+class ItemServico {
+  - id: Long
+  - valorCobrado: BigDecimal
+  - concluido: Boolean
+}
+
+class Peca {
+  - id: Long
+  - codigo: String
+  - descricao: String
+  - precoUnitario: BigDecimal
+  - quantidadeEstoque: int
+  + baixarEstoque(qtd: int): void
+}
+
+class ItemPeca {
+  - id: Long
+  - quantidade: int
+  - valorUnitario: BigDecimal
+}
+
+class Pagamento {
+  - id: Long
+  - dataHora: LocalDateTime
+  - valor: BigDecimal
+  - forma: FormaPagamento
+  - nsu: String
+}
+
+enum StatusAgendamento {
+  AGENDADO
+  CONFIRMADO
+  CANCELADO
+  ATENDIDO
+}
+
+enum StatusOS {
+  ABERTA
+  EM_DIAGNOSTICO
+  AGUARDANDO_APROVACAO
+  APROVADA
+  RECUSADA
+  EM_EXECUCAO
+  FINALIZADA
+  PAGA
+  CANCELADA
+}
+
+enum FormaPagamento {
+  DINHEIRO
+  CARTAO_CREDITO
+  CARTAO_DEBITO
+  PIX
+}
+
+Pessoa <|-- Cliente
+Pessoa <|-- Funcionario
+Funcionario <|-- Atendente
+Funcionario <|-- Mecanico
+
+Cliente "1" -- "1..*" Veiculo : possui >
+Cliente "1" -- "0..*" Agendamento : realiza >
+Agendamento "1" -- "1" Veiculo : refere-se a >
+Agendamento "0..1" -- "0..1" OrdemServico : origina >
+OrdemServico "0..*" -- "1" Veiculo : referente a >
+OrdemServico "1" -- "1" Orcamento : possui >
+OrdemServico "1" -- "1..*" ItemServico : contém >
+OrdemServico "1" -- "0..*" ItemPeca : utiliza >
+OrdemServico "0..*" -- "1" Mecanico : executada por >
+OrdemServico "0..*" -- "1" Atendente : aberta por >
+OrdemServico "1" -- "0..1" Pagamento : quitada por >
+ItemServico "0..*" -- "1" Servico : baseado em >
+ItemPeca "0..*" -- "1" Peca : refere-se a >
+
+@enduml

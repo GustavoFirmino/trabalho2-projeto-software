@@ -1,0 +1,30 @@
+@startuml Estados - Ordem de Servico
+skinparam state {
+  BackgroundColor #EEF2FF
+  BorderColor #4F46E5
+  ArrowColor #4F46E5
+}
+skinparam roundcorner 8
+
+title Diagrama de Estados — Ordem de Serviço (AutoFix)
+
+[*] --> Aberta : abrirOS()
+
+Aberta --> EmDiagnostico : mecânico inicia\ndiagnóstico
+EmDiagnostico --> AguardandoAprovacao : orçamento emitido\n(cliente notificado)
+
+AguardandoAprovacao --> Aprovada : cliente aprova\norçamento
+AguardandoAprovacao --> Recusada : cliente recusa\norçamento
+
+Aprovada --> EmExecucao : mecânico inicia\nserviço
+EmExecucao --> Finalizada : todos os itens\nconcluídos
+
+Finalizada --> Paga : pagamento\nconfirmado
+Recusada --> [*] : OS encerrada\nsem execução
+Paga --> [*] : veículo entregue
+
+Aberta --> Cancelada : cliente desiste
+EmDiagnostico --> Cancelada : cliente desiste
+Cancelada --> [*]
+
+@enduml

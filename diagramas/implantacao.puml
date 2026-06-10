@@ -1,0 +1,45 @@
+@startuml Implantacao - AutoFix
+!pragma layout smetana
+skinparam node {
+  BackgroundColor #EEF2FF
+  BorderColor #4F46E5
+}
+skinparam database {
+  BackgroundColor #F0FFF4
+  BorderColor #16A34A
+}
+skinparam ArrowColor #4F46E5
+skinparam roundcorner 8
+
+title Diagrama de Implantação — AutoFix
+
+node "Dispositivo do Usuário" as USER {
+  artifact "Navegador Web\n(SPA React)" as BROWSER
+}
+
+node "Servidor Cloud (VPS)" as CLOUD {
+  node "Docker" as DOCKER {
+    node "Container: app" as CAPP {
+      artifact "autofix-api.jar\n(Spring Boot — JRE 21)" as JAR
+    }
+    node "Container: db" as CDB {
+      database "PostgreSQL 16" as PG
+    }
+    node "Container: nginx" as CNG {
+      artifact "Nginx\n(proxy reverso + estáticos)" as NGINX
+    }
+  }
+}
+
+cloud "Serviços de Terceiros" as TERC {
+  node "Gateway de Pagamento" as GW
+  node "Servidor SMTP" as SMTP
+}
+
+BROWSER --> NGINX : HTTPS (443)
+NGINX --> JAR : HTTP (8080)
+JAR --> PG : TCP (5432)
+JAR --> GW : HTTPS (API REST)
+JAR --> SMTP : SMTP/TLS (587)
+
+@enduml

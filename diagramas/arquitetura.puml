@@ -1,0 +1,44 @@
+@startuml Arquitetura - AutoFix
+!pragma layout smetana
+skinparam componentStyle rectangle
+skinparam rectangle {
+  BackgroundColor #EEF2FF
+  BorderColor #4F46E5
+}
+skinparam database {
+  BackgroundColor #F0FFF4
+  BorderColor #16A34A
+}
+skinparam ArrowColor #4F46E5
+skinparam roundcorner 8
+
+title Arquitetura em Camadas (MVC) — AutoFix
+
+rectangle "Cliente (Browser)" as BR {
+  rectangle "SPA React\n(View)" as VIEW
+}
+
+rectangle "Servidor de Aplicação — Spring Boot" as APP {
+  rectangle "Camada de Apresentação\nREST Controllers" as CTRL
+  rectangle "Camada de Negócio\nServices (regras de negócio)" as SRV
+  rectangle "Camada de Persistência\nRepositories (Spring Data JPA)" as REP
+  rectangle "Camada de Domínio\nEntidades JPA" as DOM
+}
+
+database "PostgreSQL 16" as DB
+
+rectangle "Serviços Externos" as EXT {
+  rectangle "Gateway de Pagamento" as PAY
+  rectangle "Servidor SMTP\n(E-mail)" as MAIL
+}
+
+VIEW -down-> CTRL : HTTP/JSON (REST)
+CTRL -down-> SRV : chama
+SRV -down-> REP : usa
+REP -down-> DB : SQL (JDBC)
+SRV -right-> PAY : API REST
+SRV -right-> MAIL : SMTP
+SRV .left.> DOM : manipula
+REP .up.> DOM : mapeia (ORM)
+
+@enduml

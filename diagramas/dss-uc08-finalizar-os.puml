@@ -1,0 +1,39 @@
+@startuml DSS UC-08 - Finalizar OS e Receber Pagamento
+skinparam sequenceArrowThickness 2
+skinparam sequence {
+  ActorBackgroundColor #DBEAFE
+  ActorBorderColor #2563EB
+  ParticipantBackgroundColor #EEF2FF
+  ParticipantBorderColor #4F46E5
+  ArrowColor #4F46E5
+  LifeLineBorderColor #A5B4FC
+}
+skinparam roundcorner 8
+
+title DSS — UC-08 Finalizar OS e Receber Pagamento
+
+actor "Atendente" as A
+participant ":Sistema AutoFix" as S
+participant ":Gateway de Pagamento" as G
+
+A -> S : finalizarOS(numeroOS)
+S --> A : resumo da OS\n(serviços executados, peças, valor total)
+
+A -> S : registrarPagamento(numeroOS,\nformaPagamento, valor)
+
+alt Pagamento eletrônico (cartão / PIX)
+  S -> G : autorizarTransacao(valor, dadosPagamento)
+  alt Transação autorizada
+    G --> S : autorização confirmada (NSU)
+    S --> A : pagamento registrado\nOS encerrada — veículo liberado
+    S -> S : enviarNotaPorEmailAoCliente()
+  else Transação negada
+    G --> S : transação negada
+    S --> A : erro: "Pagamento não autorizado.\nTente outra forma de pagamento."
+  end
+else Pagamento em dinheiro
+  S --> A : pagamento registrado\nOS encerrada — veículo liberado
+  S -> S : enviarNotaPorEmailAoCliente()
+end
+
+@enduml

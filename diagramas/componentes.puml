@@ -1,0 +1,58 @@
+@startuml Componentes - AutoFix
+!pragma layout smetana
+skinparam component {
+  BackgroundColor #EEF2FF
+  BorderColor #4F46E5
+}
+skinparam interface {
+  BackgroundColor #DBEAFE
+  BorderColor #2563EB
+}
+skinparam ArrowColor #4F46E5
+skinparam roundcorner 8
+
+title Diagrama de Componentes — AutoFix
+
+package "Front-end" {
+  [SPA React] as SPA
+}
+
+package "Back-end (Spring Boot)" {
+  [API REST\n(Controllers)] as API
+  [Módulo de Agendamento] as AGD
+  [Módulo de Ordem de Serviço] as OS
+  [Módulo de Orçamento] as ORC
+  [Módulo de Pagamento] as PGT
+  [Módulo de Estoque de Peças] as EST
+  [Módulo de Notificação] as NOT
+  [Módulo de Relatórios] as REL
+  [Camada de Persistência\n(Spring Data JPA)] as PER
+}
+
+database "PostgreSQL" as DB
+[Gateway de Pagamento] as GW
+[Servidor SMTP] as SMTP
+
+SPA --> API : HTTP/JSON
+
+API --> AGD
+API --> OS
+API --> ORC
+API --> PGT
+API --> REL
+
+OS --> EST : baixa de peças
+ORC --> NOT : notifica orçamento
+PGT --> NOT : envia nota
+PGT --> GW : autoriza transação
+NOT --> SMTP : envia e-mail
+
+AGD --> PER
+OS --> PER
+ORC --> PER
+PGT --> PER
+EST --> PER
+REL --> PER
+PER --> DB : JDBC
+
+@enduml

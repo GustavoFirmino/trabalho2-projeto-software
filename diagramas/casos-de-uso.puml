@@ -1,0 +1,59 @@
+@startuml Casos de Uso - AutoFix
+!pragma layout smetana
+left to right direction
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #EEF2FF
+  BorderColor #4F46E5
+  ArrowColor #4F46E5
+}
+skinparam roundcorner 8
+
+title Diagrama de Casos de Uso — AutoFix\n
+
+actor "Cliente" as CLI
+actor "Atendente" as ATE
+actor "Mecânico" as MEC
+actor "Gerente" as GER
+actor "Gateway de\nPagamento\n(sistema externo)" as PAG
+actor "Servidor de\nE-mail\n(sistema externo)" as SMTP
+
+rectangle "Sistema AutoFix" {
+  usecase "UC-01\nAgendar Atendimento" as UC01
+  usecase "UC-02\nCadastrar Cliente e Veículo" as UC02
+  usecase "UC-03\nAbrir Ordem de Serviço" as UC03
+  usecase "UC-04\nRegistrar Diagnóstico\ne Orçamento" as UC04
+  usecase "UC-05\nAprovar Orçamento" as UC05
+  usecase "UC-06\nExecutar Serviço" as UC06
+  usecase "UC-07\nRegistrar Peças Utilizadas" as UC07
+  usecase "UC-08\nFinalizar OS e\nReceber Pagamento" as UC08
+  usecase "UC-09\nConsultar Histórico\ndo Veículo" as UC09
+  usecase "UC-10\nGerar Relatórios\nGerenciais" as UC10
+  usecase "Notificar Cliente\npor E-mail" as UCN
+}
+
+CLI --> UC01
+CLI --> UC05
+CLI --> UC09
+
+ATE --> UC01
+ATE --> UC02
+ATE --> UC03
+ATE --> UC08
+ATE --> UC09
+
+MEC --> UC04
+MEC --> UC06
+MEC --> UC07
+
+GER --> UC10
+
+UC03 ..> UC02 : <<include>>
+UC06 ..> UC07 : <<extend>>
+UC04 ..> UCN : <<include>>
+UC08 ..> UCN : <<include>>
+
+UC08 --> PAG
+UCN --> SMTP
+
+@enduml

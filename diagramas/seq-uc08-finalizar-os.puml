@@ -1,0 +1,69 @@
+@startuml Sequencia UC-08 - Finalizar OS
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipant underline
+skinparam sequence {
+  ActorBackgroundColor #DBEAFE
+  ActorBorderColor #2563EB
+  ParticipantBackgroundColor #EEF2FF
+  ParticipantBorderColor #4F46E5
+  ArrowColor #4F46E5
+  LifeLineBorderColor #A5B4FC
+  BoxBackgroundColor #F0F4FF
+  BoxBorderColor #A5B4FC
+}
+skinparam roundcorner 8
+
+title Realização do UC-08 — Finalizar OS e Receber Pagamento
+
+actor "Atendente" as A
+box "Apresentação" #F0F4FF
+  participant "PagamentoController" as PC
+end box
+box "Negócio" #F0F9FF
+  participant "PagamentoService" as PS
+  participant "GatewayPagamentoClient" as GW
+  participant "NotificacaoService" as NS
+end box
+box "Persistência" #F0FFF4
+  participant "OrdemServicoRepository" as OSR
+  participant "PagamentoRepository" as PR
+end box
+database "PostgreSQL" as DB
+
+A -> PC : POST /ordens-servico/{numero}/pagamento\n(forma, valor)
+activate PC
+PC -> PS : registrarPagamento(numero, forma, valor)
+activate PS
+
+PS -> OSR : findByNumero(numero)
+OSR -> DB : SELECT * FROM ordens_servico WHERE numero = ?
+DB --> OSR : OrdemServico
+OSR --> PS : OrdemServico
+
+alt OS não finalizada ou valor divergente
+  PS --> PC : throws PagamentoInvalidoException
+  PC --> A : 422 Unprocessable Entity
+else Pagamento eletrônico
+  PS -> GW : autorizarTransacao(valor, dados)
+  alt Autorizada
+    GW --> PS : NSU da transação
+    PS -> PR : save(Pagamento + NSU)
+    PR -> DB : INSERT INTO pagamentos (...)
+    DB --> PR : OK
+    PS -> OSR : atualizarStatus(os, PAGA)
+    OSR -> DB : UPDATE ordens_servico SET status = 'PAGA'
+    DB --> OSR : OK
+    PS -> NS : enviarNotaPorEmail(cliente, os)
+    NS --> PS : e-mail enviado
+    PS --> PC : PagamentoDTO
+    PC --> A : 201 Created — "OS encerrada.\nVeículo liberado."
+  else Negada
+    GW --> PS : transação negada
+    PS --> PC : throws TransacaoNegadaException
+    PC --> A : 402 Payment Required
+  end
+end
+deactivate PS
+deactivate PC
+
+@enduml

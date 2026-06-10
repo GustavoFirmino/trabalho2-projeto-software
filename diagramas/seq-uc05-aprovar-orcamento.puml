@@ -1,0 +1,64 @@
+@startuml Sequencia UC-05 - Aprovar Orcamento
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipant underline
+skinparam sequence {
+  ActorBackgroundColor #DBEAFE
+  ActorBorderColor #2563EB
+  ParticipantBackgroundColor #EEF2FF
+  ParticipantBorderColor #4F46E5
+  ArrowColor #4F46E5
+  LifeLineBorderColor #A5B4FC
+  BoxBackgroundColor #F0F4FF
+  BoxBorderColor #A5B4FC
+}
+skinparam roundcorner 8
+
+title Realização do UC-05 — Aprovar Orçamento
+
+actor "Cliente" as C
+box "Apresentação" #F0F4FF
+  participant "OrcamentoController" as OC
+end box
+box "Negócio" #F0F9FF
+  participant "OrcamentoService" as OS
+  participant "NotificacaoService" as NS
+end box
+box "Persistência" #F0FFF4
+  participant "OrcamentoRepository" as OR
+  participant "OrdemServicoRepository" as OSR
+end box
+database "PostgreSQL" as DB
+
+C -> OC : PUT /orcamentos/{id}/aprovar
+activate OC
+OC -> OS : aprovarOrcamento(id)
+activate OS
+
+OS -> OR : findById(id)
+OR -> DB : SELECT * FROM orcamentos WHERE id = ?
+DB --> OR : Orcamento
+OR --> OS : Orcamento
+
+alt Orçamento já respondido
+  OS --> OC : throws OrcamentoJaRespondidoException
+  OC --> C : 409 Conflict
+else Aprovação válida
+  OS -> OS : orcamento.aprovar()
+  OS -> OR : save(orcamento)
+  OR -> DB : UPDATE orcamentos SET aprovado = true
+  DB --> OR : OK
+
+  OS -> OSR : atualizarStatus(os, APROVADA)
+  OSR -> DB : UPDATE ordens_servico SET status = 'APROVADA'
+  DB --> OSR : OK
+
+  OS -> NS : notificarMecanico(ordemServico)
+  NS --> OS : notificação enviada
+
+  OS --> OC : OrcamentoDTO (aprovado)
+  deactivate OS
+  OC --> C : 200 OK — "Orçamento aprovado.\nServiço liberado para execução."
+end
+deactivate OC
+
+@enduml

@@ -1,0 +1,30 @@
+@startuml Comunicacao UC-01 - Agendar Atendimento
+!pragma layout smetana
+skinparam rectangle {
+  BackgroundColor #EEF2FF
+  BorderColor #4F46E5
+}
+skinparam actor {
+  BackgroundColor #DBEAFE
+  BorderColor #2563EB
+}
+skinparam ArrowColor #4F46E5
+skinparam roundcorner 8
+
+title Diagrama de Comunicação — Realização do UC-01 Agendar Atendimento
+
+actor "Cliente" as C
+rectangle ":AgendamentoController" as AC
+rectangle ":AgendamentoService" as AS
+rectangle ":AgendamentoRepository" as AR
+rectangle ":NotificacaoService" as NS
+
+C -> AC : 1: agendarAtendimento(veiculoId, dataHora, problema)
+AC -> AS : 1.1: agendar(dto)
+AS -> AR : 1.1.1: existeConflito(dataHora)
+AS -> AR : 1.1.2: save(agendamento)
+AS -> NS : 1.1.3: confirmarPorEmail(cliente, agendamento)
+AC <-- AS : 1.2: AgendamentoDTO
+C <-- AC : 2: confirmação (código do agendamento)
+
+@enduml
